@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hitster Player</title>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #242424;
+    --border: #333;
+    --text: #e8e8e8;
+    --muted: #888;
+    --accent: #1db954;
+    --accent-hover: #1ed760;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+  }
+  h1 { font-size: clamp(1.4rem, 4vw, 1.9rem); font-weight: 800; color: var(--accent); letter-spacing: -0.03em; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 0.82rem; margin-bottom: 28px; }
+
+  /* Upload */
+  .upload-area {
+    width: 100%; max-width: 520px;
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 32px; text-align: center; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s; margin-bottom: 24px;
+  }
+  .upload-area:hover { border-color: var(--accent); background: #0d1f11; }
+  .upload-area input { display: none; }
+  .upload-icon { font-size: 2.2rem; margin-bottom: 8px; }
+  .upload-area strong { display: block; margin-bottom: 4px; }
+  .upload-area p { color: var(--muted); font-size: 0.85rem; }
+
+  /* Player */
+  .player { width: 100%; max-width: 520px; display: none; flex-direction: column; gap: 16px; }
+
+  /* YouTube Player - sichtbar aber kompakt */
+  .yt-wrapper {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: #000;
+    position: relative;
+  }
+  #yt-player { width: 100%; height: 100%; }
+
+  /* Song Info */
+  .song-info {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+  }
+  .song-num { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .song-title { font-size: clamp(1.1rem, 3.5vw, 1.4rem); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .song-artist { color: var(--muted); font-size: 0.9rem; }
+
+  /* Jahr */
+  .year-row { display: flex; justify-content: center; gap: 12px; align-items: center; }
+  .year-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--muted); font-size: 0.85rem;
+    padding: 9px 22px; cursor: pointer; transition: all 0.18s;
+  }
+  .year-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .year-display { font-size: 2.8rem; font-weight: 900; color: var(--accent); letter-spacing: -0.05em; display: none; }
+
+  /* Status */
+  .status {
+    background: var(--surface2); border-radius: 8px;
+    padding: 10px 16px; font-size: 0.8rem; color: var(--muted);
+    text-align: center; min-height: 38px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .status.playing { color: var(--accent); }
+  .status.error { color: #e55; }
+
+  /* Controls */
+  .controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .btn {
+    border: none; border-radius: 10px; padding: 14px 8px;
+    font-size: 0.82rem; font-weight: 600; cursor: pointer;
+    transition: all 0.18s; display: flex; flex-direction: column;
+    align-items: center; gap: 4px;
+  }
+  .btn .i { font-size: 1.2rem; }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: var(--accent-hover); transform: scale(1.03); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; }
+
+  /* Playlist */
+  .playlist-wrap { display: none; flex-direction: column; gap: 6px; }
+  .playlist-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; padding: 0 4px; }
+  .playlist-scroll { max-height: 220px; overflow-y: auto; background: var(--surface); border-radius: var(--radius); padding: 8px; }
+  .pl-item {
+    padding: 8px 10px; border-radius: 8px; font-size: 0.8rem;
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; transition: background 0.15s; color: var(--muted);
+  }
+  .pl-item:hover { background: var(--surface2); color: var(--text); }
+  .pl-item.active { background: #0d1f11; color: var(--accent); font-weight: 600; }
+  .pl-item .yr { font-size: 0.72rem; opacity: 0.7; flex-shrink: 0; margin-left: 8px; }
+
+  @media (max-width: 380px) {
+    .controls { grid-template-columns: repeat(2, 1fr); }
+    .btn-shuffle { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<h1>🎵 Hitster Player</h1>
+<p class="subtitle">Spotify-Playlist → YouTube Audio</p>
+
+<div class="upload-area" id="uploadArea">
+  <div class="upload-icon">📂</div>
+  <strong>CSV-Datei laden</strong>
+  <p>Klick oder Datei hierhin ziehen</p>
+  <input type="file" id="csvInput" accept=".csv">
+</div>
+
+<div class="player" id="player">
+
+  <div class="yt-wrapper">
+    <div id="yt-player"></div>
+  </div>
+
+  <div class="song-info">
+    <div class="song-num" id="songNum">Song 1 / 1</div>
+    <div class="song-title" id="songTitle">–</div>
+    <div class="song-artist" id="songArtist">–</div>
+  </div>
+
+  <div class="year-row">
+    <button class="year-btn" id="yearBtn" onclick="revealYear()">🎯 Jahr aufdecken</button>
+    <div class="year-display" id="yearDisplay"></div>
+  </div>
+
+  <div class="status" id="status">Bereit</div>
+
+  <div class="controls">
+    <button class="btn btn-secondary" onclick="prevSong()"><span class="i">⏮</span>Zurück</button>
+    <button class="btn btn-primary" id="btnPlay" onclick="togglePlay()"><span class="i" id="playIcon">▶</span><span id="playLabel">Play</span></button>
+    <button class="btn btn-secondary" onclick="nextSong()"><span class="i">⏭</span>Weiter</button>
+    <button class="btn btn-secondary btn-shuffle" onclick="shuffle()"><span class="i">🔀</span>Shuffle</button>
+    <button class="btn btn-secondary" onclick="resetYear()"><span class="i">🎯</span>Reset</button>
+    <button class="btn btn-secondary" onclick="toggleList()"><span class="i">📋</span>Liste</button>
+  </div>
+
+</div>
+
+<div class="playlist-wrap" id="playlistWrap">
+  <div class="playlist-label" id="listLabel">Playlist</div>
+  <div class="playlist-scroll" id="listScroll"></div>
+</div>
+
+<script>
+var playlist = [];
+var idx = 0;
+var player = null;
+var ready = false;
+var playing = false;
+
+// YouTube IFrame API
+var tag = document.createElement('script');
+tag.src = 'https://www.youtube.com/iframe_api';
+document.head.appendChild(tag);
+
+window.onYouTubeIframeAPIReady = function() {
+  player = new YT.Player('yt-player', {
+    playerVars: {
+      autoplay: 0,
+      rel: 0,
+      modestbranding: 1,
+      iv_load_policy: 3,
+      cc_load_policy: 0
+    },
+    events: {
+      onReady: function() {
+        ready = true;
+        setStatus('CSV laden und los!', '');
+      },
+      onStateChange: function(e) {
+        if (e.data === YT.PlayerState.PLAYING) {
+          playing = true;
+          document.getElementById('playIcon').textContent = '⏸';
+          document.getElementById('playLabel').textContent = 'Pause';
+          setStatus('▶ ' + playlist[idx].title + ' – ' + playlist[idx].artist, 'playing');
+        } else if (e.data === YT.PlayerState.PAUSED) {
+          playing = false;
+          document.getElementById('playIcon').textContent = '▶';
+          document.getElementById('playLabel').textContent = 'Play';
+          setStatus('⏸ Pausiert', '');
+        } else if (e.data === YT.PlayerState.ENDED) {
+          playing = false;
+          nextSong();
+        }
+      },
+      onError: function(e) {
+        setStatus('Fehler ' + e.data + ' – überspringe Song...', 'error');
+        setTimeout(nextSong, 1500);
+      }
+    }
+  });
+};
+
+// Upload
+document.getElementById('uploadArea').addEventListener('click', function() {
+  document.getElementById('csvInput').click();
+});
+document.getElementById('uploadArea').addEventListener('dragover', function(e) {
+  e.preventDefault();
+  this.style.borderColor = 'var(--accent)';
+});
+document.getElementById('uploadArea').addEventListener('dragleave', function() {
+  this.style.borderColor = 'var(--border)';
+});
+document.getElementById('uploadArea').addEventListener('drop', function(e) {
+  e.preventDefault();
+  this.style.borderColor = 'var(--border)';
+  if (e.dataTransfer.files[0]) loadCSV(e.dataTransfer.files[0]);
+});
+document.getElementById('csvInput').addEventListener('change', function(e) {
+  if (e.target.files[0]) loadCSV(e.target.files[0]);
+});
+
+function loadCSV(file) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var lines = e.target.result.split('\n').filter(function(l) { return l.trim(); });
+    playlist = [];
+    for (var i = 1; i < lines.length; i++) {
+      var cols = parseCSV(lines[i]);
+      if (cols.length < 4) continue;
+      var url = cols[3].trim();
+      if (!url || url === 'NOT_FOUND') continue;
+      var vid = extractId(url);
+      if (!vid) continue;
+      playlist.push({ title: cols[0].trim(), artist: cols[1].trim(), year: cols[2].trim(), vid: vid });
+    }
+    if (!playlist.length) { setStatus('Keine gültigen Songs gefunden!', 'error'); return; }
+    idx = 0;
+    document.getElementById('uploadArea').style.display = 'none';
+    document.getElementById('player').style.display = 'flex';
+    updateInfo();
+    renderList();
+    setStatus(playlist.length + ' Songs geladen – Play drücken!', '');
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parseCSV(line) {
+  var result = [], cur = '', inQ = false;
+  for (var i = 0; i < line.length; i++) {
+    if (line[i] === '"') { inQ = !inQ; }
+    else if (line[i] === ',' && !inQ) { result.push(cur); cur = ''; }
+    else { cur += line[i]; }
+  }
+  result.push(cur);
+  return result;
+}
+
+function extractId(url) {
+  var m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function updateInfo() {
+  if (!playlist.length) return;
+  var s = playlist[idx];
+  document.getElementById('songNum').textContent = 'Song ' + (idx+1) + ' / ' + playlist.length;
+  document.getElementById('songTitle').textContent = s.title;
+  document.getElementById('songArtist').textContent = s.artist;
+  resetYear();
+  highlightList();
+}
+
+function togglePlay() {
+  if (!ready || !playlist.length) return;
+  if (playing) {
+    player.pauseVideo();
+  } else {
+    player.loadVideoById(playlist[idx].vid);
+  }
+}
+
+function nextSong() {
+  idx = (idx + 1) % playlist.length;
+  updateInfo();
+  if (ready) player.loadVideoById(playlist[idx].vid);
+}
+
+function prevSong() {
+  idx = (idx - 1 + playlist.length) % playlist.length;
+  updateInfo();
+  if (ready) player.loadVideoById(playlist[idx].vid);
+}
+
+function jumpTo(i) {
+  idx = i;
+  updateInfo();
+  if (ready) player.loadVideoById(playlist[idx].vid);
+}
+
+function shuffle() {
+  for (var i = playlist.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i+1));
+    var tmp = playlist[i]; playlist[i] = playlist[j]; playlist[j] = tmp;
+  }
+  idx = 0;
+  updateInfo();
+  renderList();
+  setStatus('🔀 Gemischt!', '');
+}
+
+function revealYear() {
+  document.getElementById('yearBtn').style.display = 'none';
+  document.getElementById('yearDisplay').style.display = 'block';
+  document.getElementById('yearDisplay').textContent = playlist[idx].year;
+}
+
+function resetYear() {
+  document.getElementById('yearBtn').style.display = 'inline-block';
+  document.getElementById('yearDisplay').style.display = 'none';
+}
+
+function setStatus(msg, type) {
+  var el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status' + (type ? ' ' + type : '');
+}
+
+function renderList() {
+  var html = '';
+  for (var i = 0; i < playlist.length; i++) {
+    var s = playlist[i];
+    html += '<div class="pl-item' + (i===idx?' active':'') + '" id="pli'+i+'" onclick="jumpTo('+i+')">' +
+            '<span>' + escHtml(s.title) + ' – ' + escHtml(s.artist) + '</span>' +
+            '<span class="yr">' + s.year + '</span></div>';
+  }
+  document.getElementById('listScroll').innerHTML = html;
+  document.getElementById('listLabel').textContent = 'Playlist (' + playlist.length + ' Songs)';
+}
+
+function highlightList() {
+  var items = document.querySelectorAll('.pl-item');
+  for (var i = 0; i < items.length; i++) items[i].classList.toggle('active', i === idx);
+  var a = document.getElementById('pli'+idx);
+  if (a) a.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+function toggleList() {
+  var w = document.getElementById('playlistWrap');
+  w.style.display = w.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
