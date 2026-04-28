@@ -396,7 +396,7 @@
   }
 
   async function spotifyPlaylistTracks(playlistId, token) {
-    let url = 'https://api.spotify.com/v1/playlists/' + encodeURIComponent(playlistId) + '/tracks?limit=100';
+    let url = 'https://api.spotify.com/v1/playlists/' + encodeURIComponent(playlistId) + '/items?limit=100&fields=next,items(track(name,artists(name),album(release_date)))';
     const tracks = [];
     while (url) {
       const res = await fetch(url, {
@@ -404,6 +404,7 @@
       });
       if (!res.ok) {
         const txt = await res.text();
+        if (res.status === 403) throw new Error('Spotify 403 Forbidden: Stelle sicher dass die Playlist öffentlich ist und deine App im Spotify Developer Dashboard auf "Extended Access" steht (nicht Development Mode mit <25 Nutzern).');
         throw new Error('Spotify Playlist-Read fehlgeschlagen: ' + res.status + ' ' + txt);
       }
       const data = await res.json();
@@ -425,9 +426,9 @@
 
   async function invidiousSearch(title, artist) {
     const instances = [
-      'https://invidious.fdn.fr',
-      'https://yewtu.be',
-      'https://vid.puffyan.us'
+      'https://iv.datura.network',
+      'https://invidious.privacydev.net',
+      'https://invidious.nerdvpn.de'
     ];
     const queries = [
       `${title} ${artist} lyrics`,
