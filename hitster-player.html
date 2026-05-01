@@ -9,11 +9,14 @@
     --bg: #0f0f0f;
     --surface: #1a1a1a;
     --surface2: #242424;
+    --surface3: #2c2c2c;
     --border: #333;
     --text: #e8e8e8;
     --muted: #888;
     --accent: #1db954;
     --accent-hover: #1ed760;
+    --danger: #e55;
+    --warn: #f59e0b;
     --radius: 12px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -28,74 +31,112 @@
     padding: 24px 16px 48px;
   }
   h1 { font-size: clamp(1.4rem, 4vw, 1.9rem); font-weight: 800; color: var(--accent); letter-spacing: -0.03em; margin-bottom: 4px; }
-  .subtitle { color: var(--muted); font-size: 0.82rem; margin-bottom: 28px; }
+  .subtitle { color: var(--muted); font-size: 0.82rem; margin-bottom: 20px; }
+
+  /* ── Playlist-Manager ── */
+  .pl-manager {
+    width: 100%; max-width: 520px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .pl-manager-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .pl-manager-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  .pl-storage-bar { font-size: 0.72rem; color: var(--muted); }
+  .pl-storage-bar span { color: var(--text); font-weight: 600; }
+  .pl-list { max-height: 220px; overflow-y: auto; }
+  .pl-entry {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #222;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .pl-entry:last-child { border-bottom: none; }
+  .pl-entry:hover { background: var(--surface2); }
+  .pl-entry.active { background: #0d1f11; }
+  .pl-entry-info { flex: 1; min-width: 0; }
+  .pl-entry-name { font-size: 0.88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pl-entry.active .pl-entry-name { color: var(--accent); }
+  .pl-entry-meta { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+  .pl-entry-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .pl-icon-btn {
+    background: var(--surface3); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--muted); font-size: 0.78rem;
+    padding: 4px 8px; cursor: pointer; transition: all 0.15s;
+  }
+  .pl-icon-btn:hover { border-color: var(--danger); color: var(--danger); }
+  .pl-empty { padding: 20px 14px; text-align: center; color: var(--muted); font-size: 0.84rem; }
+  .pl-badge {
+    display: inline-block; font-size: 0.66rem; font-weight: 700;
+    border-radius: 4px; padding: 2px 5px; margin-left: 6px;
+    background: var(--warn); color: #000; vertical-align: middle;
+  }
 
   /* Upload */
   .upload-area {
     width: 100%; max-width: 520px;
     border: 2px dashed var(--border); border-radius: var(--radius);
-    padding: 32px; text-align: center; cursor: pointer;
-    transition: border-color 0.2s, background 0.2s; margin-bottom: 24px;
+    padding: 24px; text-align: center; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s; margin-bottom: 16px;
   }
   .upload-area:hover { border-color: var(--accent); background: #0d1f11; }
   .upload-area input { display: none; }
-  .upload-icon { font-size: 2.2rem; margin-bottom: 8px; }
-  .upload-area strong { display: block; margin-bottom: 4px; }
-  .upload-area p { color: var(--muted); font-size: 0.85rem; }
+  .upload-icon { font-size: 1.8rem; margin-bottom: 6px; }
+  .upload-area strong { display: block; margin-bottom: 2px; font-size: 0.9rem; }
+  .upload-area p { color: var(--muted); font-size: 0.82rem; }
+
+  /* Modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.7); z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px; width: min(400px, 92vw);
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  }
+  .modal h3 { font-size: 1rem; margin-bottom: 8px; }
+  .modal p { font-size: 0.86rem; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+  .modal .btn-confirm { background: var(--danger); color: #fff; border: none; border-radius: 8px; padding: 9px 18px; cursor: pointer; font-weight: 700; font-size: 0.85rem; }
+  .modal .btn-cancel { background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 9px 18px; cursor: pointer; font-size: 0.85rem; }
 
   /* Player */
-  .player { width: 100%; max-width: 520px; display: none; flex-direction: column; gap: 16px; }
-
-  /* YouTube Player - sichtbar aber kompakt */
-  .yt-wrapper {
-    width: 100%;
-    aspect-ratio: 16/9;
-    border-radius: var(--radius);
-    overflow: hidden;
-    background: #000;
-    position: relative;
-  }
+  .player { width: 100%; max-width: 520px; display: none; flex-direction: column; gap: 14px; }
+  .yt-wrapper { width: 100%; aspect-ratio: 16/9; border-radius: var(--radius); overflow: hidden; background: #000; }
   #yt-player { width: 100%; height: 100%; }
 
-  /* Song Info */
-  .song-info {
-    background: var(--surface);
-    border-radius: var(--radius);
-    padding: 20px;
-    text-align: center;
+  .now-playing-label {
+    font-size: 0.7rem; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.1em; text-align: center;
   }
+  .now-playing-label span { color: var(--accent); font-weight: 700; }
+
+  .song-info { background: var(--surface); border-radius: var(--radius); padding: 18px; text-align: center; }
   .song-num { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
   .song-title { font-size: clamp(1.1rem, 3.5vw, 1.4rem); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
   .song-artist { color: var(--muted); font-size: 0.9rem; }
 
-  /* Jahr */
   .year-row { display: flex; justify-content: center; gap: 12px; align-items: center; }
-  .year-btn {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--muted); font-size: 0.85rem;
-    padding: 9px 22px; cursor: pointer; transition: all 0.18s;
-  }
+  .year-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-size: 0.85rem; padding: 9px 22px; cursor: pointer; transition: all 0.18s; }
   .year-btn:hover { border-color: var(--accent); color: var(--accent); }
   .year-display { font-size: 2.8rem; font-weight: 900; color: var(--accent); letter-spacing: -0.05em; display: none; }
 
-  /* Status */
-  .status {
-    background: var(--surface2); border-radius: 8px;
-    padding: 10px 16px; font-size: 0.8rem; color: var(--muted);
-    text-align: center; min-height: 38px;
-    display: flex; align-items: center; justify-content: center;
-  }
+  .status { background: var(--surface2); border-radius: 8px; padding: 10px 16px; font-size: 0.8rem; color: var(--muted); text-align: center; min-height: 38px; display: flex; align-items: center; justify-content: center; }
   .status.playing { color: var(--accent); }
-  .status.error { color: #e55; }
+  .status.error { color: var(--danger); }
 
-  /* Controls */
   .controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .btn {
-    border: none; border-radius: 10px; padding: 14px 8px;
-    font-size: 0.82rem; font-weight: 600; cursor: pointer;
-    transition: all 0.18s; display: flex; flex-direction: column;
-    align-items: center; gap: 4px;
-  }
+  .btn { border: none; border-radius: 10px; padding: 14px 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.18s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
   .btn .i { font-size: 1.2rem; }
   .btn-primary { background: var(--accent); color: #000; }
   .btn-primary:hover { background: var(--accent-hover); transform: scale(1.03); }
@@ -103,42 +144,49 @@
   .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
   .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; }
 
-  /* Playlist */
-  .playlist-wrap { display: none; flex-direction: column; gap: 6px; }
-  .playlist-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; padding: 0 4px; }
-  .playlist-scroll { max-height: 220px; overflow-y: auto; background: var(--surface); border-radius: var(--radius); padding: 8px; }
-  .pl-item {
-    padding: 8px 10px; border-radius: 8px; font-size: 0.8rem;
-    display: flex; justify-content: space-between; align-items: center;
-    cursor: pointer; transition: background 0.15s; color: var(--muted);
-  }
-  .pl-item:hover { background: var(--surface2); color: var(--text); }
-  .pl-item.active { background: #0d1f11; color: var(--accent); font-weight: 600; }
-  .pl-item .yr { font-size: 0.72rem; opacity: 0.7; flex-shrink: 0; margin-left: 8px; }
+  .tracklist-wrap { display: none; flex-direction: column; gap: 6px; }
+  .tracklist-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; padding: 0 4px; }
+  .tracklist-scroll { max-height: 220px; overflow-y: auto; background: var(--surface); border-radius: var(--radius); padding: 8px; }
+  .tl-item { padding: 8px 10px; border-radius: 8px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.15s; color: var(--muted); }
+  .tl-item:hover { background: var(--surface2); color: var(--text); }
+  .tl-item.active { background: #0d1f11; color: var(--accent); font-weight: 600; }
+  .tl-item .yr { font-size: 0.72rem; opacity: 0.7; flex-shrink: 0; margin-left: 8px; }
 
-  @media (max-width: 380px) {
-    .controls { grid-template-columns: repeat(2, 1fr); }
-    .btn-shuffle { display: none; }
-  }
+  @media (max-width: 380px) { .controls { grid-template-columns: repeat(2, 1fr); } .btn-shuffle { display: none; } }
 </style>
 </head>
 <body>
 
 <h1>🎵 Hitster Player</h1>
-<p class="subtitle">Spotify-Playlist → YouTube Audio</p>
+<p class="subtitle">Gespeicherte Playlist laden oder neue CSV importieren</p>
 
+<!-- Playlist Manager -->
+<div class="pl-manager" id="plManager">
+  <div class="pl-manager-header">
+    <span class="pl-manager-title">📚 Gespeicherte Playlists</span>
+    <span class="pl-storage-bar" id="storageBar">0 KB / ~5 MB</span>
+  </div>
+  <div class="pl-list" id="plList">
+    <div class="pl-empty">Noch keine Playlists gespeichert. CSV laden ↓</div>
+  </div>
+</div>
+
+<!-- Upload -->
 <div class="upload-area" id="uploadArea">
   <div class="upload-icon">📂</div>
-  <strong>CSV-Datei laden</strong>
-  <p>Klick oder Datei hierhin ziehen</p>
+  <strong>CSV-Datei laden & speichern</strong>
+  <p>Klick oder Datei hierhin ziehen · wird automatisch im Browser gespeichert</p>
   <input type="file" id="csvInput" accept=".csv">
 </div>
 
-<div class="player" id="player">
+<!-- Aktive Playlist Label -->
+<div class="now-playing-label" id="nowPlayingLabel" style="display:none; width:100%; max-width:520px; margin-bottom:4px;">
+  Aktiv: <span id="nowPlayingName">–</span>
+</div>
 
-  <div class="yt-wrapper">
-    <div id="yt-player"></div>
-  </div>
+<!-- Player -->
+<div class="player" id="player">
+  <div class="yt-wrapper"><div id="yt-player"></div></div>
 
   <div class="song-info">
     <div class="song-num" id="songNum">Song 1 / 1</div>
@@ -159,41 +207,267 @@
     <button class="btn btn-secondary" onclick="nextSong()"><span class="i">⏭</span>Weiter</button>
     <button class="btn btn-secondary btn-shuffle" onclick="shuffle()"><span class="i">🔀</span>Shuffle</button>
     <button class="btn btn-secondary" onclick="resetYear()"><span class="i">🎯</span>Reset</button>
-    <button class="btn btn-secondary" onclick="toggleList()"><span class="i">📋</span>Liste</button>
+    <button class="btn btn-secondary" onclick="toggleList()"><span class="i">📋</span>Tracks</button>
   </div>
-
 </div>
 
-<div class="playlist-wrap" id="playlistWrap">
-  <div class="playlist-label" id="listLabel">Playlist</div>
-  <div class="playlist-scroll" id="listScroll"></div>
+<!-- Tracklist -->
+<div class="tracklist-wrap" id="tracklistWrap">
+  <div class="tracklist-label" id="listLabel">Tracks</div>
+  <div class="tracklist-scroll" id="listScroll"></div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <h3>Playlist löschen?</h3>
+    <p id="deleteModalText">Diese Playlist wird aus dem Browser-Speicher entfernt. Diese Aktion kann nicht rückgängig gemacht werden.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeDeleteModal()">Abbrechen</button>
+      <button class="btn-confirm" onclick="confirmDelete()">Löschen</button>
+    </div>
+  </div>
 </div>
 
 <script>
+// ── State ──────────────────────────────────────────────────
 var playlist = [];
 var idx = 0;
-var player = null;
-var ready = false;
+var ytPlayer = null;
+var ytReady = false;
 var playing = false;
+var activeKey = null;
+var deleteTargetKey = null;
 
-// YouTube IFrame API
+var STORAGE_KEY = 'hitster.playlists.v1';
+
+// ── djb2 Checksum ──────────────────────────────────────────
+function djb2(str) {
+  var hash = 5381;
+  for (var i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) + str.charCodeAt(i);
+    hash = hash & 0x7fffffff;
+  }
+  return hash.toString(16);
+}
+
+// ── localStorage helpers ───────────────────────────────────
+function loadDB() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) { return {}; }
+}
+
+function saveDB(db) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+    updateStorageBar();
+    return true;
+  } catch (e) {
+    if (e.name === 'QuotaExceededError') {
+      alert('localStorage voll! Bitte eine gespeicherte Playlist löschen.');
+    }
+    return false;
+  }
+}
+
+function storageUsedKB() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY) || '';
+    return Math.round((raw.length * 2) / 1024);
+  } catch (e) { return 0; }
+}
+
+function updateStorageBar() {
+  var kb = storageUsedKB();
+  var el = document.getElementById('storageBar');
+  var pct = Math.round(kb / 5120 * 100);
+  var color = pct > 80 ? '#e55' : pct > 60 ? '#f59e0b' : '#888';
+  el.innerHTML = '<span style="color:' + color + '">' + kb + ' KB</span> / ~5120 KB';
+}
+
+// ── Playlist Key aus Dateiname ─────────────────────────────
+function keyFromFilename(name) {
+  return name.replace(/\.csv$/i, '').toLowerCase()
+    .replace(/[^a-z0-9äöüß\-_]/g, '-')
+    .replace(/-+/g, '-').replace(/^-|-$/g, '');
+}
+
+// ── Playlist-Manager rendern ───────────────────────────────
+function renderPlManager() {
+  var db = loadDB();
+  var keys = Object.keys(db);
+  var el = document.getElementById('plList');
+
+  if (!keys.length) {
+    el.innerHTML = '<div class="pl-empty">Noch keine Playlists gespeichert. CSV laden ↓</div>';
+    return;
+  }
+
+  keys.sort(function(a, b) {
+    return new Date(db[b].savedAt) - new Date(db[a].savedAt);
+  });
+
+  el.innerHTML = keys.map(function(k) {
+    var pl = db[k];
+    var isActive = k === activeKey;
+    var savedDate = new Date(pl.savedAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' });
+    var sizeKB = Math.round((JSON.stringify(pl.tracks).length * 2) / 1024);
+    return '<div class="pl-entry' + (isActive ? ' active' : '') + '" data-key="' + escHtml(k) + '">' +
+      '<div class="pl-entry-info">' +
+        '<div class="pl-entry-name">' + escHtml(pl.name) + '</div>' +
+        '<div class="pl-entry-meta">' + pl.trackCount + ' Tracks · ' + savedDate + ' · ' + sizeKB + ' KB</div>' +
+      '</div>' +
+      '<div class="pl-entry-actions">' +
+        '<button class="pl-icon-btn" data-del="' + escHtml(k) + '" title="Löschen">🗑</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  // Klick auf Eintrag → laden
+  el.querySelectorAll('.pl-entry').forEach(function(entry) {
+    entry.addEventListener('click', function(e) {
+      if (e.target.closest('[data-del]')) return;
+      loadFromStorage(entry.dataset.key);
+    });
+  });
+
+  // Klick auf Löschen-Button
+  el.querySelectorAll('[data-del]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openDeleteModal(btn.dataset.del);
+    });
+  });
+}
+
+// ── CSV einlesen & speichern ───────────────────────────────
+function loadCSV(file) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var content = e.target.result;
+    var lines = content.split('\n').filter(function(l) { return l.trim(); });
+    var tracks = [];
+    for (var i = 1; i < lines.length; i++) {
+      var cols = parseCSV(lines[i]);
+      if (cols.length < 4) continue;
+      var url = cols[3].trim();
+      if (!url || url === 'NOT_FOUND') continue;
+      var vid = extractId(url);
+      if (!vid) continue;
+      tracks.push({ title: cols[0].trim(), artist: cols[1].trim(), year: cols[2].trim(), vid: vid });
+    }
+    if (!tracks.length) { setStatus('Keine gültigen Songs gefunden!', 'error'); return; }
+
+    var key = keyFromFilename(file.name);
+    var hash = djb2(content);
+    var db = loadDB();
+    var isUpdate = false;
+
+    if (db[key]) {
+      if (db[key].hash === hash) {
+        // Gleiche Datei – einfach laden ohne zu überschreiben
+        setStatus('Playlist bereits aktuell, wird geladen.', '');
+        loadFromStorage(key);
+        return;
+      }
+      isUpdate = true;
+    }
+
+    db[key] = {
+      name: file.name.replace(/\.csv$/i, ''),
+      hash: hash,
+      savedAt: new Date().toISOString(),
+      trackCount: tracks.length,
+      tracks: tracks
+    };
+
+    if (!saveDB(db)) return;
+    renderPlManager();
+
+    if (isUpdate) {
+      setStatus('✅ Playlist aktualisiert (' + tracks.length + ' Tracks)', '');
+    }
+
+    loadFromStorage(key);
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+// ── Playlist aus Storage aktivieren ───────────────────────
+function loadFromStorage(key) {
+  var db = loadDB();
+  var pl = db[key];
+  if (!pl) return;
+
+  playlist = pl.tracks.slice();
+  idx = 0;
+  activeKey = key;
+
+  document.getElementById('uploadArea').style.display = 'none';
+  document.getElementById('player').style.display = 'flex';
+  document.getElementById('nowPlayingLabel').style.display = 'block';
+  document.getElementById('nowPlayingName').textContent = pl.name;
+
+  renderPlManager();
+  updateInfo();
+  renderTracklist();
+  setStatus(playlist.length + ' Tracks geladen – Play drücken!', '');
+}
+
+// ── Delete Modal ───────────────────────────────────────────
+function openDeleteModal(key) {
+  var db = loadDB();
+  var pl = db[key];
+  deleteTargetKey = key;
+  document.getElementById('deleteModalText').textContent =
+    '"' + (pl ? pl.name : key) + '" wird aus dem Browser-Speicher entfernt. Diese Aktion kann nicht rückgängig gemacht werden.';
+  document.getElementById('deleteModal').classList.add('open');
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').classList.remove('open');
+  deleteTargetKey = null;
+}
+
+function confirmDelete() {
+  if (!deleteTargetKey) return;
+  var db = loadDB();
+  delete db[deleteTargetKey];
+  saveDB(db);
+  if (activeKey === deleteTargetKey) {
+    activeKey = null;
+    playlist = [];
+    document.getElementById('player').style.display = 'none';
+    document.getElementById('uploadArea').style.display = 'block';
+    document.getElementById('nowPlayingLabel').style.display = 'none';
+    document.getElementById('tracklistWrap').style.display = 'none';
+    if (ytPlayer && ytReady) ytPlayer.stopVideo();
+  }
+  renderPlManager();
+  closeDeleteModal();
+}
+
+// ── YouTube IFrame API ─────────────────────────────────────
 var tag = document.createElement('script');
 tag.src = 'https://www.youtube.com/iframe_api';
 document.head.appendChild(tag);
 
 window.onYouTubeIframeAPIReady = function() {
-  player = new YT.Player('yt-player', {
-    playerVars: {
-      autoplay: 0,
-      rel: 0,
-      modestbranding: 1,
-      iv_load_policy: 3,
-      cc_load_policy: 0
-    },
+  ytPlayer = new YT.Player('yt-player', {
+    playerVars: { autoplay: 0, rel: 0, modestbranding: 1, iv_load_policy: 3, cc_load_policy: 0 },
     events: {
       onReady: function() {
-        ready = true;
-        setStatus('CSV laden und los!', '');
+        ytReady = true;
+        // Letzte aktive Playlist auto-laden
+        var db = loadDB();
+        var keys = Object.keys(db);
+        if (keys.length) {
+          setStatus('Playlist aus Liste wählen oder neue CSV laden.', '');
+        } else {
+          setStatus('CSV laden und los!', '');
+        }
       },
       onStateChange: function(e) {
         if (e.data === YT.PlayerState.PLAYING) {
@@ -219,112 +493,69 @@ window.onYouTubeIframeAPIReady = function() {
   });
 };
 
-// Upload
+// ── Upload Events ──────────────────────────────────────────
 document.getElementById('uploadArea').addEventListener('click', function() {
   document.getElementById('csvInput').click();
 });
 document.getElementById('uploadArea').addEventListener('dragover', function(e) {
-  e.preventDefault();
-  this.style.borderColor = 'var(--accent)';
+  e.preventDefault(); this.style.borderColor = 'var(--accent)';
 });
 document.getElementById('uploadArea').addEventListener('dragleave', function() {
   this.style.borderColor = 'var(--border)';
 });
 document.getElementById('uploadArea').addEventListener('drop', function(e) {
-  e.preventDefault();
-  this.style.borderColor = 'var(--border)';
+  e.preventDefault(); this.style.borderColor = 'var(--border)';
   if (e.dataTransfer.files[0]) loadCSV(e.dataTransfer.files[0]);
 });
 document.getElementById('csvInput').addEventListener('change', function(e) {
   if (e.target.files[0]) loadCSV(e.target.files[0]);
 });
 
-function loadCSV(file) {
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    var lines = e.target.result.split('\n').filter(function(l) { return l.trim(); });
-    playlist = [];
-    for (var i = 1; i < lines.length; i++) {
-      var cols = parseCSV(lines[i]);
-      if (cols.length < 4) continue;
-      var url = cols[3].trim();
-      if (!url || url === 'NOT_FOUND') continue;
-      var vid = extractId(url);
-      if (!vid) continue;
-      playlist.push({ title: cols[0].trim(), artist: cols[1].trim(), year: cols[2].trim(), vid: vid });
-    }
-    if (!playlist.length) { setStatus('Keine gültigen Songs gefunden!', 'error'); return; }
-    idx = 0;
-    document.getElementById('uploadArea').style.display = 'none';
-    document.getElementById('player').style.display = 'flex';
-    updateInfo();
-    renderList();
-    setStatus(playlist.length + ' Songs geladen – Play drücken!', '');
-  };
-  reader.readAsText(file, 'UTF-8');
-}
+// Modal Overlay Klick schließt
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+  if (e.target === this) closeDeleteModal();
+});
 
-function parseCSV(line) {
-  var result = [], cur = '', inQ = false;
-  for (var i = 0; i < line.length; i++) {
-    if (line[i] === '"') { inQ = !inQ; }
-    else if (line[i] === ',' && !inQ) { result.push(cur); cur = ''; }
-    else { cur += line[i]; }
-  }
-  result.push(cur);
-  return result;
-}
-
-function extractId(url) {
-  var m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
-  return m ? m[1] : null;
-}
-
+// ── Player Controls ────────────────────────────────────────
 function updateInfo() {
   if (!playlist.length) return;
   var s = playlist[idx];
-  document.getElementById('songNum').textContent = 'Song ' + (idx+1) + ' / ' + playlist.length;
+  document.getElementById('songNum').textContent = 'Song ' + (idx + 1) + ' / ' + playlist.length;
   document.getElementById('songTitle').textContent = s.title;
   document.getElementById('songArtist').textContent = s.artist;
   resetYear();
-  highlightList();
+  highlightTracklist();
 }
 
 function togglePlay() {
-  if (!ready || !playlist.length) return;
-  if (playing) {
-    player.pauseVideo();
-  } else {
-    player.loadVideoById(playlist[idx].vid);
-  }
+  if (!ytReady || !playlist.length) return;
+  if (playing) { ytPlayer.pauseVideo(); }
+  else { ytPlayer.loadVideoById(playlist[idx].vid); }
 }
 
 function nextSong() {
   idx = (idx + 1) % playlist.length;
   updateInfo();
-  if (ready) player.loadVideoById(playlist[idx].vid);
+  if (ytReady) ytPlayer.loadVideoById(playlist[idx].vid);
 }
 
 function prevSong() {
   idx = (idx - 1 + playlist.length) % playlist.length;
   updateInfo();
-  if (ready) player.loadVideoById(playlist[idx].vid);
+  if (ytReady) ytPlayer.loadVideoById(playlist[idx].vid);
 }
 
 function jumpTo(i) {
-  idx = i;
-  updateInfo();
-  if (ready) player.loadVideoById(playlist[idx].vid);
+  idx = i; updateInfo();
+  if (ytReady) ytPlayer.loadVideoById(playlist[idx].vid);
 }
 
 function shuffle() {
   for (var i = playlist.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i+1));
+    var j = Math.floor(Math.random() * (i + 1));
     var tmp = playlist[i]; playlist[i] = playlist[j]; playlist[j] = tmp;
   }
-  idx = 0;
-  updateInfo();
-  renderList();
+  idx = 0; updateInfo(); renderTracklist();
   setStatus('🔀 Gemischt!', '');
 }
 
@@ -345,33 +576,54 @@ function setStatus(msg, type) {
   el.className = 'status' + (type ? ' ' + type : '');
 }
 
-function renderList() {
+function renderTracklist() {
   var html = '';
   for (var i = 0; i < playlist.length; i++) {
     var s = playlist[i];
-    html += '<div class="pl-item' + (i===idx?' active':'') + '" id="pli'+i+'" onclick="jumpTo('+i+')">' +
-            '<span>' + escHtml(s.title) + ' – ' + escHtml(s.artist) + '</span>' +
-            '<span class="yr">' + s.year + '</span></div>';
+    html += '<div class="tl-item' + (i === idx ? ' active' : '') + '" id="tli' + i + '" onclick="jumpTo(' + i + ')">' +
+      '<span>' + escHtml(s.title) + ' – ' + escHtml(s.artist) + '</span>' +
+      '<span class="yr">' + s.year + '</span></div>';
   }
   document.getElementById('listScroll').innerHTML = html;
-  document.getElementById('listLabel').textContent = 'Playlist (' + playlist.length + ' Songs)';
+  document.getElementById('listLabel').textContent = 'Tracks (' + playlist.length + ')';
 }
 
-function highlightList() {
-  var items = document.querySelectorAll('.pl-item');
+function highlightTracklist() {
+  var items = document.querySelectorAll('.tl-item');
   for (var i = 0; i < items.length; i++) items[i].classList.toggle('active', i === idx);
-  var a = document.getElementById('pli'+idx);
+  var a = document.getElementById('tli' + idx);
   if (a) a.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
 function toggleList() {
-  var w = document.getElementById('playlistWrap');
+  var w = document.getElementById('tracklistWrap');
   w.style.display = w.style.display === 'flex' ? 'none' : 'flex';
 }
 
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// ── CSV Parse Helpers ──────────────────────────────────────
+function parseCSV(line) {
+  var result = [], cur = '', inQ = false;
+  for (var i = 0; i < line.length; i++) {
+    if (line[i] === '"') { inQ = !inQ; }
+    else if (line[i] === ',' && !inQ) { result.push(cur); cur = ''; }
+    else { cur += line[i]; }
+  }
+  result.push(cur);
+  return result;
 }
+
+function extractId(url) {
+  var m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Init ───────────────────────────────────────────────────
+renderPlManager();
+updateStorageBar();
 </script>
 </body>
 </html>
